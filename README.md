@@ -12,7 +12,7 @@ All project paths are **relative**, except for the ROS 2 installation path.
 Clone the repository using Git:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/VamsiU987/ros_camera.git
 ```
 
 Navigate into the cloned folder:
