@@ -1,27 +1,42 @@
 # ROS 2 Image Publisher–Subscriber System
 
-A simple ROS 2 project that publishes image frames from a camera (or synthetic source) and processes them in a subscriber node by overlaying timestamps and saving results to disk.
+A ROS 2–based image streaming project where a publisher node sends image frames and a subscriber node processes and saves them with timestamp metadata.
 
 ---
 
 ## Overview
 
-This project implements a small distributed system using ROS 2 with two Python nodes:
+This project implements a small distributed system using **ROS 2** and **Python**:
 
-- **Publisher node**: Continuously captures images from a webcam (or generates synthetic images if the camera is unavailable) and publishes them over a ROS 2 topic.
-- **Subscriber node**: Receives the images, overlays a timestamp, saves the processed images to disk, and records metadata for each saved image.
+- **Publisher node**  
+  Captures images from a webcam (or generates synthetic images if the camera is unavailable) and publishes them continuously over a ROS 2 topic.
 
-The system demonstrates basic inter-node communication, image processing with OpenCV, and file output handling.
+- **Subscriber node**  
+  Subscribes to the image stream, overlays a timestamp on each frame, saves the processed images to disk, and records metadata in a JSON file.
+
+The project is designed to be easy to run, inspect, and verify, following the requirements of the provided task documentation.
 
 ---
 
 ## Prerequisites
 
-- **ROS 2** (Foxy Fitzroy or newer) installed and sourced  
+Before cloning the project, ensure the following are available on your system:
+
+### Common (All Platforms)
 - **Python 3**
-- **OpenCV for Python**
-- **NumPy**
-- **ffmpeg** (required only for a known VirtualBox webcam initialization workaround on Linux VMs)
+- **ROS 2** (Foxy Fitzroy or newer)
+- **Git**
+
+### Linux
+- `ffmpeg` (used for webcam initialization in some VM environments)
+
+### macOS
+- Homebrew package manager
+
+### Windows
+- Windows 10 or newer
+- ROS 2 installed via the official Windows installer
+- Command Prompt or PowerShell
 
 ---
 
@@ -34,24 +49,38 @@ git clone <repository-url>
 cd <repository-name>
 ```
 
-Ensure your ROS 2 environment is sourced before proceeding.
+Ensure that the ROS 2 environment is sourced before running any commands.
 
 ---
 
 ## Installing Dependencies
 
-Install Python dependencies:
-
-```bash
-pip install opencv-python numpy
-```
-
-On Ubuntu systems (or Linux VMs), install `ffmpeg` if not already present:
+### Linux (Ubuntu)
 
 ```bash
 sudo apt update
-sudo apt install ffmpeg
+sudo apt install python3-pip ffmpeg -y
+pip install opencv-python numpy
 ```
+
+### macOS
+
+Using Homebrew:
+
+```bash
+brew install ffmpeg
+pip3 install opencv-python numpy
+```
+
+### Windows
+
+Install Python dependencies:
+
+```bat
+pip install opencv-python numpy
+```
+
+Ensure that the ROS 2 installation directory is sourced in the terminal before running the project.
 
 ---
 
@@ -59,56 +88,70 @@ sudo apt install ffmpeg
 
 No configuration files or environment variables are required.
 
-Ensure that:
-- Your ROS 2 environment is sourced.
-- The camera device is accessible (if using a webcam).
+Make sure:
+- The ROS 2 environment is sourced in every terminal.
+- A webcam is available (optional; synthetic images are used as a fallback).
 
 ---
 
 ## Running the Application
 
-Open **two terminals**, each with the ROS 2 environment sourced.
+You must run the publisher and subscriber in **separate terminals**.
 
-### Start the Publisher
+### Linux / macOS
 
+**Terminal 1 – Publisher**
 ```bash
-python publisher/image_publisher.py
+python3 publisher/image_publisher.py
 ```
 
-This starts publishing image frames to the ROS 2 topic.
-
-### Start the Subscriber
-
+**Terminal 2 – Subscriber**
 ```bash
-python subscriber/image_subscriber.py
+python3 subscriber/image_subscriber.py
 ```
 
-This subscribes to the image stream, processes each frame, and saves outputs to disk.
+### Windows
+
+**Terminal 1 – Publisher**
+```bat
+python publisher\image_publisher.py
+```
+
+**Terminal 2 – Subscriber**
+```bat
+python subscriber\image_subscriber.py
+```
+
+After starting both nodes, images will be published, processed, and saved automatically.
 
 ---
 
 ## Output
 
-All outputs are saved under the `output/` directory:
+All output files are written to the `output/` directory.
 
-- **Images**:  
-  ```
-  output/images/image_000000.jpg
-  output/images/image_000001.jpg
-  ...
-  ```
-  Each image includes a timestamp overlay.
+### Images
+Saved processed images:
+```
+output/images/image_000000.jpg
+output/images/image_000001.jpg
+...
+```
 
-- **Metadata**:  
-  ```
-  output/metadata.json
-  ```
-  Contains an entry for each saved image, including:
-  - Saved file name
-  - Timestamp used on the image
-  - Epoch timestamp
+Each image includes a timestamp overlay.
 
-Console logs from both nodes indicate publishing/subscribing status, frame numbers, timestamps, and any errors.
+### Metadata
+Metadata file:
+```
+output/metadata.json
+```
+
+Each entry contains:
+- Saved file name
+- Timestamp used on the image
+- Epoch timestamp
+
+Both nodes log status information (frame number, timestamps, success or errors) to the console.
 
 ---
 
@@ -130,26 +173,28 @@ Console logs from both nodes indicate publishing/subscribing status, frame numbe
 
 ## Troubleshooting
 
-### Camera works in Cheese but not in the publisher (Linux VM)
+### Linux / VirtualBox Webcam Issue
 
-On some Linux VirtualBox setups, the webcam may not initialize correctly for OpenCV-based applications.
+In some Linux virtual machine setups, the webcam may not initialize correctly for OpenCV even though it works in applications like *Cheese*.
 
-Run this once to initialize the camera:
+Run the following command **once** to initialize the camera:
 
 ```bash
 ffplay -loglevel quiet -t 1 /dev/video0
 ```
 
-Then re-run the publisher.
+Then restart the publisher node.
 
-### No camera available
+To avoid repeating this manually, you may create a shell alias.
 
-If the webcam cannot be opened, the publisher automatically falls back to generating synthetic images.
+### No Webcam Available
+
+If no webcam is detected, the publisher automatically switches to synthetic image generation. The rest of the pipeline continues to work normally.
 
 ---
 
 ## Notes
 
-- This project uses `std_msgs/ByteMultiArray` to transmit JPEG-encoded image data.
-- The subscriber includes robust handling to support different ROS Python data representations, particularly on Windows and virtualized environments.
-- The system is intended as a simple demonstration and is not optimized for high-throughput or large-scale deployments.
+- Image data is transmitted using `std_msgs/ByteMultiArray` with JPEG-encoded frames.
+- The subscriber includes robust handling for different ROS Python message representations, ensuring compatibility across Linux, macOS, and Windows.
+- The project is intended as a clear and simple demonstration of ROS 2 inter-node communication and image processing.
