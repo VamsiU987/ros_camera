@@ -125,7 +125,7 @@ cd ros_camera
 
    Extract the contents into:
    ```
-   C:\pixi_ws
+   C:\work
    ```
 
 5. **Verify ROS 2 (use cmd.exe)**
