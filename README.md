@@ -1,174 +1,155 @@
-# 🖼️ ROS 2 Image Publisher & Subscriber
+# ROS 2 Image Publisher–Subscriber System
 
-This project demonstrates a simple image publisher and subscriber using **ROS 2** and **Python**.
-
-The repository is **portable** and can be cloned into **any folder**.  
-All project paths are **relative**, except for the ROS 2 installation path.
+A simple ROS 2 project that publishes image frames from a camera (or synthetic source) and processes them in a subscriber node by overlaying timestamps and saving results to disk.
 
 ---
 
-## 📥 Clone the Repository
+## Overview
 
-Clone the repository using Git:
+This project implements a small distributed system using ROS 2 with two Python nodes:
+
+- **Publisher node**: Continuously captures images from a webcam (or generates synthetic images if the camera is unavailable) and publishes them over a ROS 2 topic.
+- **Subscriber node**: Receives the images, overlays a timestamp, saves the processed images to disk, and records metadata for each saved image.
+
+The system demonstrates basic inter-node communication, image processing with OpenCV, and file output handling.
+
+---
+
+## Prerequisites
+
+- **ROS 2** (Foxy Fitzroy or newer) installed and sourced  
+- **Python 3**
+- **OpenCV for Python**
+- **NumPy**
+- **ffmpeg** (required only for a known VirtualBox webcam initialization workaround on Linux VMs)
+
+---
+
+## Project Setup
+
+Clone the repository:
 
 ```bash
-git clone https://github.com/VamsiU987/ros_camera.git
+git clone <repository-url>
+cd <repository-name>
 ```
 
-Navigate into the cloned folder:
+Ensure your ROS 2 environment is sourced before proceeding.
+
+---
+
+## Installing Dependencies
+
+Install Python dependencies:
 
 ```bash
-cd <path-to-cloned-repo>
+pip install opencv-python numpy
 ```
 
-You can clone this repository **anywhere** on your system.
-
----
-
-## ⚙️ Dependencies / Prerequisites
-
-### Common (All Operating Systems)
-- Python 3.8 or newer
-- ROS 2 (Jazzy or compatible)
-- Git
-
-### Windows
-- Windows 10 or newer
-- Pixi
-- ROS 2 Windows binary installation
-
-### Linux
-- Ubuntu 22.04 or newer
-- ROS 2 installed via apt
-
-### macOS
-- macOS 12 or newer
-- ROS 2 installed via Homebrew or source build
-
----
-
-## 🛠️ Installation
-
-### 🪟 Windows (Pixi-based ROS 2)
-
-Two paths are important:
-
-- `<ros-workspace>`  
-  ROS 2 Pixi workspace  
-  Example: `C:\pixi_ws`
-
-- `<project-path>`  
-  Path where this repository is cloned  
-  (can be any folder)
-
----
-
-### 🐧 Linux
-
-Install ROS 2:
+On Ubuntu systems (or Linux VMs), install `ffmpeg` if not already present:
 
 ```bash
-sudo apt install ros-<ros-distro>-desktop
-```
-
-Source ROS 2:
-
-```bash
-source /opt/ros/<ros-distro>/setup.bash
+sudo apt update
+sudo apt install ffmpeg
 ```
 
 ---
 
-### 🍎 macOS
+## Configuration
 
-Install ROS 2 using Homebrew or from source.
+No configuration files or environment variables are required.
 
-Source ROS 2:
-
-```bash
-source <ros-install-path>/setup.bash
-```
+Ensure that:
+- Your ROS 2 environment is sourced.
+- The camera device is accessible (if using a webcam).
 
 ---
 
-## ▶️ How to Run the Project
+## Running the Application
 
-You need **two terminals**:
-- One for the publisher
-- One for the subscriber
+Open **two terminals**, each with the ROS 2 environment sourced.
 
----
-
-### 🪟 Windows
-
-#### Terminal 1 — Publisher
-
-```bat
-cd <ros-workspace>
-pixi shell
-call <ros-workspace>\ros2-windows\local_setup.bat
-
-cd /d <project-path>
-set ROS_DOMAIN_ID=0
-python publisher\image_publisher.py
-```
-
-#### Terminal 2 — Subscriber
-
-```bat
-cd <ros-workspace>
-pixi shell
-call <ros-workspace>\ros2-windows\local_setup.bat
-
-cd /d <project-path>
-set ROS_DOMAIN_ID=0
-python subscriber\image_subscriber.py
-```
-
----
-
-### 🐧 Linux / 🍎 macOS
-
-In **both terminals**:
-
-```bash
-source /opt/ros/<ros-distro>/setup.bash
-cd <project-path>
-export ROS_DOMAIN_ID=0
-```
-
-Terminal 1:
+### Start the Publisher
 
 ```bash
 python publisher/image_publisher.py
 ```
 
-Terminal 2:
+This starts publishing image frames to the ROS 2 topic.
+
+### Start the Subscriber
 
 ```bash
 python subscriber/image_subscriber.py
 ```
 
+This subscribes to the image stream, processes each frame, and saves outputs to disk.
+
 ---
 
-## 📂 Output
+## Output
 
-All output is generated relative to the project directory.
+All outputs are saved under the `output/` directory:
 
-- Images are saved in:
+- **Images**:  
   ```
-  output/images/
+  output/images/image_000000.jpg
+  output/images/image_000001.jpg
+  ...
   ```
+  Each image includes a timestamp overlay.
 
-- Metadata is saved in:
+- **Metadata**:  
   ```
   output/metadata.json
   ```
+  Contains an entry for each saved image, including:
+  - Saved file name
+  - Timestamp used on the image
+  - Epoch timestamp
+
+Console logs from both nodes indicate publishing/subscribing status, frame numbers, timestamps, and any errors.
 
 ---
 
-## 📝 Notes
+## Project Structure
 
-- The repository can be cloned to **any folder**
-- No project-specific absolute paths are required
-- Only the ROS 2 installation path depends on the system
+```text
+.
+├── publisher/
+│   └── image_publisher.py
+├── subscriber/
+│   └── image_subscriber.py
+├── output/
+│   ├── images/
+│   └── metadata.json
+└── README.md
+```
+
+---
+
+## Troubleshooting
+
+### Camera works in Cheese but not in the publisher (Linux VM)
+
+On some Linux VirtualBox setups, the webcam may not initialize correctly for OpenCV-based applications.
+
+Run this once to initialize the camera:
+
+```bash
+ffplay -loglevel quiet -t 1 /dev/video0
+```
+
+Then re-run the publisher.
+
+### No camera available
+
+If the webcam cannot be opened, the publisher automatically falls back to generating synthetic images.
+
+---
+
+## Notes
+
+- This project uses `std_msgs/ByteMultiArray` to transmit JPEG-encoded image data.
+- The subscriber includes robust handling to support different ROS Python data representations, particularly on Windows and virtualized environments.
+- The system is intended as a simple demonstration and is not optimized for high-throughput or large-scale deployments.
