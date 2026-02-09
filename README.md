@@ -97,17 +97,18 @@ cd ros_camera
 ### Windows (Pixi + ROS 2 Binary)
 
 > Run the following steps in **PowerShell as Administrator**.
-
-1. Install Pixi:
+Open PowerShell as Administrator
+1. Install Pixi: Open PowerShell as Administrator
    ```powershell
    iwr -useb https://pixi.sh/install.ps1 | iex
    ```
-
+ Close PowerShell completely, open a new PowerShell, and verify:
 2. Verify Pixi:
    ```powershell
    pixi --version
    ```
-
+ If you see a version number, Pixi is installed correctly
+ Open PowerShell as Administrator
 3. Create Pixi workspace and install dependencies:
    ```powershell
    mkdir C:\pixi_ws
@@ -115,10 +116,12 @@ cd ros_camera
    irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/jazzy/pixi.toml -OutFile pixi.toml
    pixi install
    ```
-
-4. Download the ROS 2 Jazzy Windows binary ZIP and extract it into:
+Close the PowerShell after installation finishes.
+Download the official ROS2 Jazzy Windows ZIP and unzip it into:
+https://github.com/ros2/ros2/releases/download/release-jazzy-20260128/ros2-jazzy-20260128-windows-release-amd64.zip
+4. Download the ROS 2 Jazzy Windows binary ZIP and extract it into: Run in cmd.exe
    ```text
-   C:\pixi_ws\ros2-windows
+   C:\pixi_ws
    ```
 
 5. Verify ROS 2 (use **cmd.exe**):
